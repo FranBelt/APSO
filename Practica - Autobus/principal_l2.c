@@ -5,19 +5,20 @@
 #include <sys/wait.h>
 
 #include "comun.h"
-//#include "definiciones.h"
+#define MAX_CLIENTES 4
+#define MAX_ESPERA 4
+#define NUM_PARADAS 5
 
 int llega10 = 0;
 
-int creaproceso(const char *);
-int creaservigraf(int);
+int creaproceso(const char * nombre);
+int creaservigraf(int ultimaparada);
 void R10();
 void R12();
 
 void main() {
 	key_t clave;
 	int Id_cola, pservidorgraf, i;
-	struct tipo_elemento info;
 	
 	// PREPARACION SEÑALES
 	signal(10, R10);
@@ -27,20 +28,24 @@ void main() {
 	srand(getpid());
 
 	// CREACION SERVIDOR GRAFICO
-	pservidorgraf = creaservigraf(5);
+	pservidorgraf = creaservigraf(NUM_PARADAS);
 
 	if(!llega10)
 		pause();
 
-	for(i=1; i<=2; i++) {
+	llega10 = 0;
+
+	for(i=1; i<=MAX_CLIENTES; i++) {
 		creaproceso("cliente");
-		sleep(rand()%5 +1);
+		sleep(rand()%MAX_ESPERA +1);
 	}
 
-	for(i=1; i<=2; i++)
+	for(i=1; i<=MAX_CLIENTES; i++)
 		wait(NULL);
 
 	kill(pservidorgraf, 12);
+	
+	msgctl(Id_cola, IPC_RMID, (struct msqid_ds *)NULL);
 }
 
 // FUNCIÓN AUXILIAR PARA GENERAR PROCESOS //
