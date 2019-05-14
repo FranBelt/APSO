@@ -1,0 +1,11 @@
+CABECERA=1
+for i in $(ipcs -q | cut -d " " -f 2)
+do 
+	if [ $CABECERA -eq 1 ]
+	then
+		CABECERA=0
+	else
+		ipcrm -q $i
+	fi
+done
+
